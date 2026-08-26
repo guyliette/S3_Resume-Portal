@@ -1,0 +1,138 @@
+HTML
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Submit Your Resume</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f7fa;
+    }
+    h1 { color: #0a1f3d; }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    label { font-weight: 600; color: #1a3258; font-size: 14px; }
+    input, textarea, button {
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #cbd5e0;
+      border-radius: 4px;
+    }
+    button {
+      background: #f4b860;
+      color: #0a1f3d;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover { background: #c7902f; color: white; }
+    button:disabled { background: #cbd5e0; cursor: not-allowed; }
+    .success { color: #059669; padding: 20px; background: #ecfdf5; border-radius: 4px; margin-top: 20px; }
+    .error { color: #dc2626; padding: 20px; background: #fef2f2; border-radius: 4px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Submit Your Resume</h1>
+  <p>We are hiring. Submit your resume below and we will be in touch.</p>
+  
+  <form id="resumeForm">
+    <label>Full Name</label>
+    <input type="text" id="fullName" required>
+    
+    <label>Email</label>
+    <input type="email" id="email" required>
+    
+    <label>Phone</label>
+    <input type="tel" id="phone" required>
+    
+    <label>Position</label>
+    <input type="text" id="position" placeholder="DevOps Engineer, Cloud Architect, etc." required>
+    
+    <label>Top 3 Skills</label>
+    <textarea id="skills" rows="3" placeholder="AWS, Linux, Python..." required></textarea>
+    
+    <label>Resume (PDF)</label>
+    <input type="file" id="resume" accept=".pdf" required>
+    
+    <button type="submit">Submit Application</button>
+  </form>
+  
+  <div id="message"></div>
+  
+  <script>
+    // We will fill in this URL after we create the ALB in Part 7
+    const API_URL = 'YOUR_ALB_URL_HERE/submit';
+    
+    document.getElementById('resumeForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const button = e.target.querySelector('button');
+      const messageDiv = document.getElementById('message');
+      
+      button.disabled = true;
+      button.textContent = 'Submitting...';
+      messageDiv.innerHTML = '';
+      
+      try {
+        const file = document.getElementById('resume').files[0];
+        if (file.size > 5 * 1024 * 1024) {
+          throw new Error('File too large (max 5MB)');
+        }
+        
+        const base64 = await fileToBase64(file);
+        
+        const data = {
+          fullName: document.getElementById('fullName').value,
+          email: document.getElementById('email').value,
+          phone: document.getElementById('phone').value,
+          position: document.getElementById('position').value,
+          skills: document.getElementById('skills').value,
+          resume: base64,
+          fileName: file.name
+        };
+        
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+          messageDiv.innerHTML = '<div class="success">Application submitted! Check your email for confirmation.</div>';
+          document.getElementById('resumeForm').reset();
+        } else {
+          throw new Error(result.error || 'Submission failed');
+        }
+      } catch (err) {
+        messageDiv.innerHTML = '<div class="error">Error: ' + err.message + '</div>';
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Submit Application';
+      }
+    });
+    
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+  </script>
+</body>
+</html>
+

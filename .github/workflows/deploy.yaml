@@ -1,0 +1,40 @@
+name: Deploy frontend to S3
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+  S3_BUCKET: terraform-frontend-75c82096
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials with OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::381492114267:role/github-action-access
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Upload frontend files
+        run: |
+          aws s3 sync . "s3://${terraform-frontend-75c82096}/" \
+            --delete \
+            --exclude ".git/*" \
+            --exclude ".github/*" \
+            --exclude ".terraform/*" \
+            --exclude "*.tf" \
+            --exclude "*.tfstate" \
+            --exclude "*.tfstate.*"
