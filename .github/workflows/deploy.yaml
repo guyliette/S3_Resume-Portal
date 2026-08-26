@@ -30,7 +30,7 @@ jobs:
 
       - name: Upload frontend files
         run: |
-          aws s3 sync . "s3://${terraform-frontend-75c82096}/" \
+          aws s3 sync . "s3://${S3_BUCKET}/" \
             --delete \
             --exclude ".git/*" \
             --exclude ".github/*" \
