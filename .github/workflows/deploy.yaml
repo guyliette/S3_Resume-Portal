@@ -37,7 +37,7 @@ jobs:
       - name: Configure AWS credentials with OIDC
         uses: aws-actions/configure-aws-credentials@v5
         with:
-          role-to-assume: arn:aws:iam::381492114267:role/github-action-access
+          role-to-assume: arn:aws:iam::381492114267:role/Github-action-admin
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Upload frontend files
