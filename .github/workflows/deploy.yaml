@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:
 
 permissions:
   id-token: write
@@ -19,34 +18,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v4
 
-      - name: Inspect OIDC claims
-        uses: actions/github-script@v8
+      - uses: aws-actions/configure-aws-credentials@v4
         with:
-          script: |
-            const token = await core.getIDToken('sts.amazonaws.com');
-            const claims = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString());
-            core.info(JSON.stringify({
-              iss: claims.iss,
-              sub: claims.sub,
-              aud: claims.aud
-            }, null, 2));
-
-      - name: Configure AWS credentials with OIDC
-        uses: aws-actions/configure-aws-credentials@v5
-        with:
-          role-to-assume: arn:aws:iam::381492114267:role/Github-action-admin
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Upload frontend files
-        run: |
-          aws s3 sync . "s3://${S3_BUCKET}/" \
-            --delete \
-            --exclude ".git/*" \
-            --exclude ".github/*" \
-            --exclude ".terraform/*" \
-            --exclude "*.tf" \
-            --exclude "*.tfstate" \
-            --exclude "*.tfstate.*"
+      - name: Upload site to S3
+        run: aws s3 sync . s3://${{ env.S3_BUCKET }}/ --delete
