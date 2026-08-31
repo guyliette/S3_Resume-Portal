@@ -20,10 +20,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: aws-actions/configure-aws-credentials@v4
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: us-east-1
+          audience: sts.amazonaws.com
 
       - name: Upload site to S3
         run: aws s3 sync . s3://${{ env.S3_BUCKET }}/ --delete
