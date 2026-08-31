@@ -27,5 +27,5 @@ jobs:
           aws-region: us-east-1
           audience: sts.amazonaws.com
 
-      - name: Upload site to S3
+      - name: Uploads site to S3
         run: aws s3 sync . s3://${{ env.S3_BUCKET }}/ --delete
