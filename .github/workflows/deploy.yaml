@@ -10,7 +10,7 @@ permissions:
 
 env:
   AWS_REGION: us-east-1
-  S3_BUCKET: terraform-frontend-75c82096
+  S3_BUCKET: terraform-frontend-e4203cd8
 
 jobs:
   deploy:
